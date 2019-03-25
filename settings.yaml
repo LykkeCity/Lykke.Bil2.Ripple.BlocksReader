@@ -1,0 +1,46 @@
+# Common settings
+
+MonitoringServiceClient:
+    MonitoringServiceUrl:
+        settings-key: MonitoringServiceUrl
+
+SlackNotifications:
+    AzureQueue:
+        ConnectionString:
+            settings-key: SlackNotificationsConnString
+            types:
+                - AzureTableStorage
+        QueueName:
+            settings-key: SlackQueueName
+
+# Blocks reader settings
+
+Db:
+    AzureDataConnString:
+        settings-key: Lykke.Bil2.Ripple.BlocksReader-AzureDataConnString
+        types:
+            - AzureTableStorage
+    LogsConnString:
+        settings-key: Lykke.Bil2.Ripple.BlocksReader-LogsConnString
+        types:
+            - AzureTableStorage
+
+RabbitConnString:
+    settings-key: Lykke.Bil2.Ripple.BlocksReader-BlocksReader-RabbitConnString
+    types:
+        - RabbitMq
+        
+MessageListeningParallelism:
+    settings-key: Lykke.Bil2.Ripple.BlocksReader-BlocksReader-MessageListeningParallelism
+
+LastIrreversibleBlockMonitoringPeriod:
+    settings-key: Lykke.Bil2.Ripple.BlocksReader-BlocksReader-LastIrreversibleBlockMonitoringPeriod
+    types:
+        - Optional
+
+NodeUrl:
+  settings-key: Lykke.Bil2.Ripple.BlocksReader-NodeUrl
+NodeUsername:
+  settings-key: Lykke.Bil2.Ripple.BlocksReader-Nodeassword
+NodePassword:
+  settings-key: Lykke.Bil2.Ripple.BlocksReader-NodePassword
