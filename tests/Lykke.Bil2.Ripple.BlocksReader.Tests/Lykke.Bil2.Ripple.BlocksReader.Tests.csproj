@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Lykke.Bil2.Lykke.Bil2.Ripple.BlocksReader.BlocksReader\Lykke.Bil2.Lykke.Bil2.Ripple.BlocksReader.BlocksReader.csproj" />
+    <ProjectReference Include="..\..\src\Lykke.Bil2.Ripple.BlocksReader\Lykke.Bil2.Ripple.BlocksReader.csproj" />
   </ItemGroup>
 
 </Project>
