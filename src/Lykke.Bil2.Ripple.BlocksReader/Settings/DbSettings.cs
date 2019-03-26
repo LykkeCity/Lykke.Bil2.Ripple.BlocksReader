@@ -1,6 +1,6 @@
 using Lykke.Bil2.Sdk.BlocksReader.Settings;
 
-namespace Lykke.Bil2.Lykke.Bil2.Ripple.BlocksReader.BlocksReader.Settings
+namespace Lykke.Bil2.Ripple.BlocksReader.Settings
 {
     public class DbSettings : BaseBlocksReaderDbSettings
     {

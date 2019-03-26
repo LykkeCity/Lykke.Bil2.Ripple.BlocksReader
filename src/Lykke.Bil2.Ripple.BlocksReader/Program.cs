@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Lykke.Sdk;
 
-namespace Lykke.Bil2.Lykke.Bil2.Ripple.BlocksReader.BlocksReader
+namespace Lykke.Bil2.Ripple.BlocksReader
 {
     [UsedImplicitly]
     class Program

@@ -5,7 +5,7 @@ using Lykke.Bil2.Ripple.Client.Api.ServerState;
 using Lykke.Bil2.Sdk.BlocksReader.Services;
 using Lykke.Bil2.Sdk.Exceptions;
 
-namespace Lykke.Bil2.Lykke.Bil2.Ripple.BlocksReader.BlocksReader.Services
+namespace Lykke.Bil2.Ripple.BlocksReader.Services
 {
     public class IrreversibleBlockProvider : IIrreversibleBlockProvider
     {

@@ -1,15 +1,15 @@
 using System.ComponentModel;
 using System;
 using JetBrains.Annotations;
-using Lykke.Bil2.Lykke.Bil2.Ripple.BlocksReader.BlocksReader.Services;
-using Lykke.Bil2.Lykke.Bil2.Ripple.BlocksReader.BlocksReader.Settings;
+using Lykke.Bil2.Ripple.BlocksReader.Services;
+using Lykke.Bil2.Ripple.BlocksReader.Settings;
 using Lykke.Bil2.Sdk.BlocksReader;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Lykke.Bil2.Sdk.BlocksReader.Services;
 using Lykke.Bil2.Ripple.Client;
 
-namespace Lykke.Bil2.Lykke.Bil2.Ripple.BlocksReader.BlocksReader
+namespace Lykke.Bil2.Ripple.BlocksReader
 {
     [UsedImplicitly]
     public class Startup

@@ -3,7 +3,7 @@ using Lykke.Bil2.Sdk.BlocksReader.Settings;
 using Lykke.Bil2.Sdk.Services;
 using Lykke.SettingsReader.Attributes;
 
-namespace Lykke.Bil2.Lykke.Bil2.Ripple.BlocksReader.BlocksReader.Settings
+namespace Lykke.Bil2.Ripple.BlocksReader.Settings
 {
     /// <summary>
     /// Specific blockchain settings
