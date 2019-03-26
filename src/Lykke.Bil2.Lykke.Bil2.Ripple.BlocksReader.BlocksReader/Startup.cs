@@ -14,7 +14,7 @@ namespace Lykke.Bil2.Lykke.Bil2.Ripple.BlocksReader.BlocksReader
     [UsedImplicitly]
     public class Startup
     {
-        private const string IntegrationName = "Lykke.Bil2.Ripple.BlocksReader";
+        private const string IntegrationName = "Ripple";
 
         [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
