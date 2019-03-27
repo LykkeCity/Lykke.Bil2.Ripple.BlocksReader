@@ -41,6 +41,6 @@ LastIrreversibleBlockMonitoringPeriod:
 NodeUrl:
   settings-key: Lykke.Bil2.Ripple.BlocksReader-NodeUrl
 NodeUsername:
-  settings-key: Lykke.Bil2.Ripple.BlocksReader-Nodeassword
+  settings-key: Lykke.Bil2.Ripple.BlocksReader-NodeUsername
 NodePassword:
   settings-key: Lykke.Bil2.Ripple.BlocksReader-NodePassword
