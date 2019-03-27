@@ -10,7 +10,7 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Settings
     /// </summary>
     public class AppSettings : BaseBlocksReaderSettings<DbSettings>
     {
-        public string NodeUrl { get; set; }
+        public string NodeRpcUrl { get; set; }
 
         [Optional]
         public string NodeRpcUsername { get; set; }

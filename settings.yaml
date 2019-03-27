@@ -17,30 +17,34 @@ SlackNotifications:
 
 Db:
     AzureDataConnString:
-        settings-key: Lykke.Bil2.Ripple.BlocksReader-AzureDataConnString
+        settings-key: Ripple-AzureDataConnString
         types:
             - AzureTableStorage
     LogsConnString:
-        settings-key: Lykke.Bil2.Ripple.BlocksReader-LogsConnString
+        settings-key: Ripple-LogsConnString
         types:
             - AzureTableStorage
 
 RabbitConnString:
-    settings-key: Lykke.Bil2.Ripple.BlocksReader-BlocksReader-RabbitConnString
+    settings-key: Ripple-BlocksReader-RabbitConnString
     types:
         - RabbitMq
         
 MessageListeningParallelism:
-    settings-key: Lykke.Bil2.Ripple.BlocksReader-BlocksReader-MessageListeningParallelism
+    settings-key: Ripple-BlocksReader-MessageListeningParallelism
 
 LastIrreversibleBlockMonitoringPeriod:
-    settings-key: Lykke.Bil2.Ripple.BlocksReader-BlocksReader-LastIrreversibleBlockMonitoringPeriod
+    settings-key: Ripple-BlocksReader-LastIrreversibleBlockMonitoringPeriod
     types:
         - Optional
 
-NodeUrl:
-  settings-key: Lykke.Bil2.Ripple.BlocksReader-NodeUrl
-NodeUsername:
-  settings-key: Lykke.Bil2.Ripple.BlocksReader-NodeUsername
-NodePassword:
-  settings-key: Lykke.Bil2.Ripple.BlocksReader-NodePassword
+NodeRpcUrl:
+    settings-key: Ripple-NodeRpcUrl
+NodeRpcUsername:
+    settings-key: Ripple-NodeRpcUsername
+    types:
+        - Optional
+NodeRpcPassword:
+    settings-key: Ripple-NodeRpcPassword
+    types:
+        - Optional
