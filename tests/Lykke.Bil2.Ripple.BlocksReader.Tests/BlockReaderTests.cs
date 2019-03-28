@@ -7,8 +7,10 @@ using Lykke.Bil2.Ripple.Client;
 using Lykke.Bil2.Ripple.Client.Api.Ledger;
 using Lykke.Bil2.Sdk.BlocksReader.Services;
 using Lykke.Numerics;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
+using Refit;
 
 namespace BlockReaderTests
 {
@@ -187,6 +189,66 @@ namespace BlockReaderTests
                     )
                 ),
                 Times.Once
+            );
+        }
+    
+        [Test]
+        public async Task ShouldReadBlock()
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddRippleClient("http://s1.ripple.com:51234", logRequestErrors: false)
+                .BuildServiceProvider();
+
+            var api = serviceProvider.GetRequiredService<IRippleApi>();
+
+            var blockReader = new BlockReader(api);
+
+            try
+            {
+                await blockReader.ReadBlockAsync(46127240, _blockListener.Object);
+            }
+            catch (ApiException)
+            {
+                Assert.Ignore("Public Ripple node is not available");
+            }
+
+            _blockListener.Verify
+            (
+                x => x.HandleHeaderAsync
+                (
+                    It.Is<BlockHeaderReadEvent>(e =>
+                        e.BlockNumber == 46127240 &&
+                        e.BlockId == "2B92A3025761FE68709129C979A29929D41C858EE70C20F58BA5E4D9BDC46D4D" &&
+                        e.BlockTransactionsCount == 23
+                    )
+                ),
+                Times.Once
+            );
+
+            _blockListener.Verify
+            (
+                x => x.HandleRawBlockAsync(It.IsAny<Base58String>(), "2B92A3025761FE68709129C979A29929D41C858EE70C20F58BA5E4D9BDC46D4D"),
+                Times.Once
+            );
+
+            _blockListener.Verify
+            (
+                x => x.HandleExecutedTransactionAsync
+                (
+                    It.IsAny<Base58String>(),
+                    It.IsAny<TransferAmountTransactionExecutedEvent>()
+                ),
+                Times.Exactly(17)
+            );
+
+            _blockListener.Verify
+            (
+                x => x.HandleFailedTransactionAsync
+                (
+                    It.IsAny<Base58String>(),
+                    It.IsAny<TransactionFailedEvent>()
+                ),
+                Times.Exactly(6)
             );
         }
     }
