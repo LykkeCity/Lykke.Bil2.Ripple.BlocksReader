@@ -1,13 +1,12 @@
-using System.ComponentModel;
 using System;
 using JetBrains.Annotations;
 using Lykke.Bil2.Ripple.BlocksReader.Services;
 using Lykke.Bil2.Ripple.BlocksReader.Settings;
+using Lykke.Bil2.Ripple.Client;
 using Lykke.Bil2.Sdk.BlocksReader;
+using Lykke.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Lykke.Bil2.Sdk.BlocksReader.Services;
-using Lykke.Bil2.Ripple.Client;
 
 namespace Lykke.Bil2.Ripple.BlocksReader
 {
@@ -22,6 +21,9 @@ namespace Lykke.Bil2.Ripple.BlocksReader
             return services.BuildBlockchainBlocksReaderServiceProvider<AppSettings>(options =>
             {
                 options.IntegrationName = IntegrationName;
+#if DEBUG
+                options.RabbitVhost = AppEnvironment.EnvInfo;
+#endif
 
                 // Register required service implementations:
 

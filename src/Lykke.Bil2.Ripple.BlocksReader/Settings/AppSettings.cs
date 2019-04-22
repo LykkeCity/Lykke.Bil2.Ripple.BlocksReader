@@ -8,7 +8,7 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Settings
     /// <summary>
     /// Specific blockchain settings
     /// </summary>
-    public class AppSettings : BaseBlocksReaderSettings<DbSettings>
+    public class AppSettings : BaseBlocksReaderSettings<DbSettings, RabbitMqSettings>
     {
         public string NodeRpcUrl { get; set; }
 
