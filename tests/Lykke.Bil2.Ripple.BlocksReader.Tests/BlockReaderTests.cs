@@ -1,11 +1,11 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Bil2.Contract.BlocksReader.Events;
-using Lykke.Bil2.Contract.Common;
 using Lykke.Bil2.Ripple.BlocksReader.Services;
 using Lykke.Bil2.Ripple.Client;
 using Lykke.Bil2.Ripple.Client.Api.Ledger;
 using Lykke.Bil2.Sdk.BlocksReader.Services;
+using Lykke.Bil2.SharedDomain;
 using Lykke.Numerics;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

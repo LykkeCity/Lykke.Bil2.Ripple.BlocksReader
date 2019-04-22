@@ -25,13 +25,65 @@ Db:
         types:
             - AzureTableStorage
 
-RabbitConnString:
-    settings-key: Ripple-BlocksReader-RabbitConnString
-    types:
-        - RabbitMq
-        
-MessageListeningParallelism:
-    settings-key: Ripple-BlocksReader-MessageListeningParallelism
+RabbitMq:
+    ConnString:
+        settings-key: Bcn-BlocksReader-RabbitConnString
+        types:
+            - RabbitMq
+
+    Vhost:
+        settings-key: Bcn-BlocksReader-RabbitVhost
+        types:
+            - Optional
+
+# 4 by default
+
+    MessageConsumersCount:
+        settings-key: Bcn-BlocksReader-MessageConsumersCount
+        types:
+            - Optional
+
+# 8 by default
+
+    MessageProcessorsCount:
+        settings-key: Bcn-BlocksReader-MessageProcessorsCount
+        types:
+            - Optional
+    
+# "00:00:30" by default
+
+    DefaultFirstLevelRetryTimeout:
+        settings-key: Bcn-BlocksReader-DefaultFirstLevelRetryTimeout
+        types:
+            - Optional
+
+# "00:10:00" by default
+
+    MaxFirstLevelRetryMessageAge:
+        settings-key: Bcn-BlocksReader-MaxFirstLevelRetryMessageAge
+        types:
+            - Optional
+
+# 20 by default
+
+    MaxFirstLevelRetryCount:
+        settings-key: Bcn-BlocksReader-MaxFirstLevelRetryCount
+        types:
+            - Optional
+
+# 1000 by default
+
+    FirstLevelRetryQueueCapacity:
+        settings-key: Bcn-BlocksReader-FirstLevelRetryQueueCapacity
+        types:
+            - Optional
+
+# 500 by default
+
+    ProcessingQueueCapacity:
+        settings-key: Bcn-BlocksReader-ProcessingQueueCapacity
+        types:
+            - Optional
 
 LastIrreversibleBlockMonitoringPeriod:
     settings-key: Ripple-BlocksReader-LastIrreversibleBlockMonitoringPeriod

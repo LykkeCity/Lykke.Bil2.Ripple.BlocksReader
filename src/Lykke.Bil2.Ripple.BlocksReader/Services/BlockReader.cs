@@ -3,13 +3,12 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Common;
 using Lykke.Bil2.Contract.BlocksReader.Events;
-using Lykke.Bil2.Contract.Common;
 using Lykke.Bil2.Contract.Common.Exceptions;
 using Lykke.Bil2.Contract.Common.Extensions;
-using Lykke.Bil2.Contract.TransactionsExecutor;
 using Lykke.Bil2.Ripple.Client;
 using Lykke.Bil2.Ripple.Client.Api.Ledger;
 using Lykke.Bil2.Sdk.BlocksReader.Services;
+using Lykke.Bil2.SharedDomain;
 using Lykke.Numerics;
 
 namespace Lykke.Bil2.Ripple.BlocksReader.Services
@@ -39,29 +38,6 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
             }
 
             ledgerResponse.Result.ThrowIfError();
-
-            // emit block events
-
-            var header = ledgerResponse.Result.Ledger.Parse(headerOnly: true);
-
-            await listener.HandleHeaderAsync
-            (
-                new BlockHeaderReadEvent
-                (
-                    blockNumber,
-                    ledgerResponse.Result.LedgerHash,
-                    header.CloseTime.FromRippleEpoch(),
-                    ledgerResponse.Result.Ledger.LedgerData.GetHexStringToBytes().Length,
-                    ledgerResponse.Result.Ledger.Transactions.Length,
-                    header.ParentHash
-                )
-            );
-
-            await listener.HandleRawBlockAsync
-            (
-                ledgerResponse.Result.Ledger.LedgerData.ToBase58(),
-                ledgerResponse.Result.LedgerHash
-            );
 
             // emit transactions events
 
@@ -127,6 +103,29 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
                     );
                 }
             }
+
+            // Better to send block header in the end:
+
+            var header = ledgerResponse.Result.Ledger.Parse(headerOnly: true);
+
+            await listener.HandleHeaderAsync
+            (
+                new BlockHeaderReadEvent
+                (
+                    blockNumber,
+                    ledgerResponse.Result.LedgerHash,
+                    header.CloseTime.FromRippleEpoch(),
+                    ledgerResponse.Result.Ledger.LedgerData.GetHexStringToBytes().Length,
+                    ledgerResponse.Result.Ledger.Transactions.Length,
+                    header.ParentHash
+                )
+            );
+
+            await listener.HandleRawBlockAsync
+            (
+                ledgerResponse.Result.Ledger.LedgerData.ToBase58(),
+                ledgerResponse.Result.LedgerHash
+            );
         }
     }
 }
