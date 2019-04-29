@@ -1,3 +1,4 @@
+using System.Buffers.Text;
 using System.Linq;
 using System.Threading.Tasks;
 using Lykke.Bil2.Contract.BlocksReader.Events;
@@ -83,7 +84,7 @@ namespace BlockReaderTests
 
             _blockListener.Verify
             (
-                x => x.HandleRawBlockAsync(It.IsAny<Base58String>(), "0C3261AB65F318BC1727F5EC1EE768EA08E11657C328D872C387FAF0CAF3870D"),
+                x => x.HandleRawBlockAsync(It.IsAny<Base64String>(), "0C3261AB65F318BC1727F5EC1EE768EA08E11657C328D872C387FAF0CAF3870D"),
                 Times.Once
             );
 
@@ -91,7 +92,7 @@ namespace BlockReaderTests
             (
                 x => x.HandleExecutedTransactionAsync
                 (
-                    It.IsAny<Base58String>(),
+                    It.IsAny<Base64String>(),
                     It.Is<TransferAmountTransactionExecutedEvent>(e =>
                         e.BalanceChanges.Count(y => y.Address == "raujtsGHt5u8pv23VWFbhxhpJKHYmzp376" && y.Asset.Id == "CNY" && y.Value == Money.Create(-47503M)) == 1 &&
                         e.BlockId == "0C3261AB65F318BC1727F5EC1EE768EA08E11657C328D872C387FAF0CAF3870D" &&
@@ -180,7 +181,7 @@ namespace BlockReaderTests
             (
                 x => x.HandleFailedTransactionAsync
                 (
-                    It.IsAny<Base58String>(),
+                    It.IsAny<Base64String>(),
                     It.Is<TransactionFailedEvent>(e =>
                         e.TransactionId == "2B0CD5BD2D9898EB6F59E222325DA5D4F361843D6725DC81CDB21F39D134E140" &&
                         e.BlockId == "0C3261AB65F318BC1727F5EC1EE768EA08E11657C328D872C387FAF0CAF3870D" &&
@@ -227,7 +228,7 @@ namespace BlockReaderTests
 
             _blockListener.Verify
             (
-                x => x.HandleRawBlockAsync(It.IsAny<Base58String>(), "2B92A3025761FE68709129C979A29929D41C858EE70C20F58BA5E4D9BDC46D4D"),
+                x => x.HandleRawBlockAsync(It.IsAny<Base64String>(), "2B92A3025761FE68709129C979A29929D41C858EE70C20F58BA5E4D9BDC46D4D"),
                 Times.Once
             );
 
@@ -235,7 +236,7 @@ namespace BlockReaderTests
             (
                 x => x.HandleExecutedTransactionAsync
                 (
-                    It.IsAny<Base58String>(),
+                    It.IsAny<Base64String>(),
                     It.IsAny<TransferAmountTransactionExecutedEvent>()
                 ),
                 Times.Exactly(17)
@@ -245,7 +246,7 @@ namespace BlockReaderTests
             (
                 x => x.HandleFailedTransactionAsync
                 (
-                    It.IsAny<Base58String>(),
+                    It.IsAny<Base64String>(),
                     It.IsAny<TransactionFailedEvent>()
                 ),
                 Times.Exactly(6)

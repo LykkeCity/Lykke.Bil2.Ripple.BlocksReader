@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Common;
 using Lykke.Bil2.Contract.BlocksReader.Events;
 using Lykke.Bil2.Contract.Common.Exceptions;
-using Lykke.Bil2.Contract.Common.Extensions;
 using Lykke.Bil2.Ripple.Client;
 using Lykke.Bil2.Ripple.Client.Api.Ledger;
 using Lykke.Bil2.Sdk.BlocksReader.Services;
@@ -45,7 +44,7 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
             {
                 var tx = binaryTx.Parse();
                 var txNumber = (int)(tx.Metadata.TransactionIndex + 1);
-                var txRaw = binaryTx.TxBlob.ToBase58();
+                var txRaw = Base64String.Encode(binaryTx.TxBlob);
                 var txFee = new[]
                 {
                     new Fee
@@ -123,7 +122,7 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
 
             await listener.HandleRawBlockAsync
             (
-                ledgerResponse.Result.Ledger.LedgerData.ToBase58(),
+                Base64String.Encode(ledgerResponse.Result.Ledger.LedgerData),
                 ledgerResponse.Result.LedgerHash
             );
         }
