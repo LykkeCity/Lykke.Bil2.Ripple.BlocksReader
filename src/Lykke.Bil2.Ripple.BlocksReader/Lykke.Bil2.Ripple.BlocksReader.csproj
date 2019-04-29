@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.Bil2.Ripple.Client" Version="1.0.0-beta.15" />
+    <PackageReference Include="Lykke.Bil2.Ripple.Client" Version="1.0.0-beta.16" />
     <PackageReference Include="Lykke.Bil2.Sdk.BlocksReader" Version="1.0.0-beta.23" />
   </ItemGroup>
 </Project>
