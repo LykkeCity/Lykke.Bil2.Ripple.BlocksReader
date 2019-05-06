@@ -52,6 +52,8 @@ namespace Lykke.Bil2.Ripple.BlocksReader
                         settings.CurrentValue.NodeRpcPassword
                     );
                 };
+
+                options.UseTransferAmountTransactionsModel();
             });
         }
 

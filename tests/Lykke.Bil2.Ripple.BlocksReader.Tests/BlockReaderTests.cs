@@ -1,6 +1,5 @@
-using System.Buffers.Text;
-using System.Linq;
 using System.Threading.Tasks;
+using System.Linq;
 using Lykke.Bil2.Contract.BlocksReader.Events;
 using Lykke.Bil2.Ripple.BlocksReader.Services;
 using Lykke.Bil2.Ripple.Client;
@@ -18,15 +17,20 @@ namespace BlockReaderTests
     public class Tests
     {
         private Mock<IRippleApi> _rippleApi;
-        private Mock<IBlockListener> _blockListener;
+        private Mock<IBlockListener> _blockListenerMock;
         private BlockReader _blockReader;
+        private Mock<IBlockTransactionsListener> _transactionsListenerMock;
 
         [SetUp]
         public void Setup()
         {
             _rippleApi = new Mock<IRippleApi>();
-            _blockListener = new Mock<IBlockListener>();
+            _blockListenerMock = new Mock<IBlockListener>();
             _blockReader = new BlockReader(_rippleApi.Object);
+            _transactionsListenerMock = new Mock<IBlockTransactionsListener>();
+            _blockListenerMock
+                .Setup(x => x.StartBlockTransactionsHandling(It.IsNotNull<BlockHeaderReadEvent>()))
+                .Returns<BlockHeaderReadEvent>(evt => _transactionsListenerMock.Object);
         }
 
         [Test]
@@ -46,7 +50,7 @@ namespace BlockReaderTests
                             {
                                 Closed = true,
                                 LedgerData = "02B616D101633DE70AD949432444528DC116BCED649E7BC5274D0486893D4E34A1E1B401BB2BA4EC1D03FC45E53BF5220C1B781106D98E44785090F85AA45F75D08B6144F00504D0B96CCA8C941120D8A61BEE498A557192802A3A21E90E206ED383CF1B484D7CEF3B6A992F240BE268240BE2700A00",
-                                Transactions = new BinaryTransaction[]
+                                Transactions = new[]
                                 {
                                     new BinaryTransaction
                                     {
@@ -65,13 +69,13 @@ namespace BlockReaderTests
 
             // Act
 
-            await _blockReader.ReadBlockAsync(45487825, _blockListener.Object);
+            await _blockReader.ReadBlockAsync(45487825, _blockListenerMock.Object);
 
             // Assert
 
-            _blockListener.Verify
+            _blockListenerMock.Verify
             (
-                x => x.HandleHeaderAsync
+                x => x.StartBlockTransactionsHandling
                 (
                     It.Is<BlockHeaderReadEvent>(e =>
                         e.BlockNumber == 45487825 &&
@@ -82,20 +86,28 @@ namespace BlockReaderTests
                 Times.Once
             );
 
-            _blockListener.Verify
+            _blockListenerMock.Verify
             (
-                x => x.HandleRawBlockAsync(It.IsAny<Base64String>(), "0C3261AB65F318BC1727F5EC1EE768EA08E11657C328D872C387FAF0CAF3870D"),
+                x => x.HandleRawBlock(It.IsAny<Base64String>(), "0C3261AB65F318BC1727F5EC1EE768EA08E11657C328D872C387FAF0CAF3870D"),
                 Times.Once
             );
 
-            _blockListener.Verify
+
+            _transactionsListenerMock.Verify
             (
-                x => x.HandleExecutedTransactionAsync
+                x => x.HandleRawTransactionAsync
                 (
                     It.IsAny<Base64String>(),
-                    It.Is<TransferAmountTransactionExecutedEvent>(e =>
+                    It.Is<TransactionId>(id => id == "97A020A130F8291A2DECD187AC5DA6D636EE7B3442175D30F9E42C082FD8EB13")
+                ),
+                Times.Once
+            );
+            _transactionsListenerMock.Verify
+            (
+                x => x.HandleExecutedTransaction
+                (
+                    It.Is<TransferAmountExecutedTransaction>(e =>
                         e.BalanceChanges.Count(y => y.Address == "raujtsGHt5u8pv23VWFbhxhpJKHYmzp376" && y.Asset.Id == "CNY" && y.Value == Money.Create(-47503M)) == 1 &&
-                        e.BlockId == "0C3261AB65F318BC1727F5EC1EE768EA08E11657C328D872C387FAF0CAF3870D" &&
                         e.IsIrreversible == true &&
                         e.TransactionId == "97A020A130F8291A2DECD187AC5DA6D636EE7B3442175D30F9E42C082FD8EB13" &&
                         e.TransactionNumber == 1
@@ -126,13 +138,13 @@ namespace BlockReaderTests
 
             // Act
 
-            await _blockReader.ReadBlockAsync(45487825, _blockListener.Object);
+            await _blockReader.ReadBlockAsync(45487825, _blockListenerMock.Object);
 
             // Assert
 
-            _blockListener.Verify
+            _blockListenerMock.Verify
             (
-                x => x.HandleBlockNotFoundAsync(It.Is<BlockNotFoundEvent>(e => e.BlockNumber == 45487825)),
+                x => x.HandleNotFoundBlock(It.Is<BlockNotFoundEvent>(e => e.BlockNumber == 45487825)),
                 Times.Once
             );
         }
@@ -173,18 +185,25 @@ namespace BlockReaderTests
 
             // Act
 
-            await _blockReader.ReadBlockAsync(45487825, _blockListener.Object);
+            await _blockReader.ReadBlockAsync(45487825, _blockListenerMock.Object);
 
             // Assert
 
-            _blockListener.Verify
+            _transactionsListenerMock.Verify
             (
-                x => x.HandleFailedTransactionAsync
+                x => x.HandleRawTransactionAsync
                 (
                     It.IsAny<Base64String>(),
-                    It.Is<TransactionFailedEvent>(e =>
+                    It.IsAny<TransactionId>()
+                ),
+                Times.Once
+            );
+            _transactionsListenerMock.Verify
+            (
+                x => x.HandleFailedTransaction
+                (
+                    It.Is<FailedTransaction>(e =>
                         e.TransactionId == "2B0CD5BD2D9898EB6F59E222325DA5D4F361843D6725DC81CDB21F39D134E140" &&
-                        e.BlockId == "0C3261AB65F318BC1727F5EC1EE768EA08E11657C328D872C387FAF0CAF3870D" &&
                         e.ErrorMessage == "tecNO_DST_INSUF_XRP" &&
                         e.TransactionNumber == 24
                     )
@@ -197,7 +216,7 @@ namespace BlockReaderTests
         public async Task ShouldReadBlock()
         {
             var serviceProvider = new ServiceCollection()
-                .AddRippleClient("http://s1.ripple.com:51234", logRequestErrors: false)
+                .AddRippleClient("http://s2.ripple.com:51234", logRequestErrors: false)
                 .BuildServiceProvider();
 
             var api = serviceProvider.GetRequiredService<IRippleApi>();
@@ -206,16 +225,16 @@ namespace BlockReaderTests
 
             try
             {
-                await blockReader.ReadBlockAsync(46127240, _blockListener.Object);
+                await blockReader.ReadBlockAsync(46127240, _blockListenerMock.Object);
             }
             catch (ApiException)
             {
                 Assert.Ignore("Public Ripple node is not available");
             }
 
-            _blockListener.Verify
+            _blockListenerMock.Verify
             (
-                x => x.HandleHeaderAsync
+                x => x.StartBlockTransactionsHandling
                 (
                     It.Is<BlockHeaderReadEvent>(e =>
                         e.BlockNumber == 46127240 &&
@@ -226,28 +245,36 @@ namespace BlockReaderTests
                 Times.Once
             );
 
-            _blockListener.Verify
+            _blockListenerMock.Verify
             (
-                x => x.HandleRawBlockAsync(It.IsAny<Base64String>(), "2B92A3025761FE68709129C979A29929D41C858EE70C20F58BA5E4D9BDC46D4D"),
+                x => x.HandleRawBlock(It.IsAny<Base64String>(), "2B92A3025761FE68709129C979A29929D41C858EE70C20F58BA5E4D9BDC46D4D"),
                 Times.Once
             );
 
-            _blockListener.Verify
+            _transactionsListenerMock.Verify
             (
-                x => x.HandleExecutedTransactionAsync
+                x => x.HandleRawTransactionAsync
                 (
                     It.IsAny<Base64String>(),
-                    It.IsAny<TransferAmountTransactionExecutedEvent>()
+                    It.IsAny<TransactionId>()
+                ),
+                Times.Exactly(23)
+            );
+
+            _transactionsListenerMock.Verify
+            (
+                x => x.HandleExecutedTransaction
+                (
+                    It.IsAny<TransferAmountExecutedTransaction>()
                 ),
                 Times.Exactly(17)
             );
 
-            _blockListener.Verify
+            _transactionsListenerMock.Verify
             (
-                x => x.HandleFailedTransactionAsync
+                x => x.HandleFailedTransaction
                 (
-                    It.IsAny<Base64String>(),
-                    It.IsAny<TransactionFailedEvent>()
+                    It.IsAny<FailedTransaction>()
                 ),
                 Times.Exactly(6)
             );

@@ -32,11 +32,29 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
 
             if (ledgerResponse.Result.Error == "lgrNotFound")
             {
-                await listener.HandleBlockNotFoundAsync(new BlockNotFoundEvent(blockNumber));
+                listener.HandleNotFoundBlock(new BlockNotFoundEvent(blockNumber));
                 return;
             }
 
             ledgerResponse.Result.ThrowIfError();
+
+            listener.HandleRawBlock
+            (
+                Base64String.Encode(ledgerResponse.Result.Ledger.LedgerData),
+                ledgerResponse.Result.LedgerHash
+            );
+
+            var header = ledgerResponse.Result.Ledger.Parse(headerOnly: true);
+
+            var transactionsListener = listener.StartBlockTransactionsHandling(new BlockHeaderReadEvent
+            (
+                blockNumber,
+                ledgerResponse.Result.LedgerHash,
+                header.CloseTime.FromRippleEpoch(),
+                ledgerResponse.Result.Ledger.LedgerData.GetHexStringToBytes().Length,
+                ledgerResponse.Result.Ledger.Transactions.Length,
+                header.ParentHash
+            ));
 
             // emit transactions events
 
@@ -54,14 +72,14 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
                     )
                 };
 
+                await transactionsListener.HandleRawTransactionAsync(txRaw, tx.Hash);
+
                 if (tx.Metadata.TransactionResult == "tesSUCCESS")
                 {
-                    await listener.HandleExecutedTransactionAsync
+                    transactionsListener.HandleExecutedTransaction
                     (
-                        txRaw,
-                        new TransferAmountTransactionExecutedEvent
+                        new TransferAmountExecutedTransaction
                         (
-                            ledgerResponse.Result.LedgerHash,
                             txNumber,
                             tx.Hash,
                             tx.Metadata
@@ -85,46 +103,21 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
                 }
                 else
                 {
-                    await listener.HandleFailedTransactionAsync
+                    transactionsListener.HandleFailedTransaction
                     (
-                        txRaw,
-                        new TransactionFailedEvent
+                        new FailedTransaction
                         (
-                            ledgerResponse.Result.LedgerHash,
                             txNumber,
                             tx.Hash,
                             tx.Metadata.TransactionResult == "tecUNFUNDED" || tx.Metadata.TransactionResult == "tecUNFUNDED_PAYMENT"
                                 ? TransactionBroadcastingError.NotEnoughBalance
-                                : TransactionBroadcastingError.TransientFailure,
+                                : TransactionBroadcastingError.Unknown,
                             tx.Metadata.TransactionResult,
                             txFee
                         )
                     );
                 }
             }
-
-            // Better to send block header in the end:
-
-            var header = ledgerResponse.Result.Ledger.Parse(headerOnly: true);
-
-            await listener.HandleHeaderAsync
-            (
-                new BlockHeaderReadEvent
-                (
-                    blockNumber,
-                    ledgerResponse.Result.LedgerHash,
-                    header.CloseTime.FromRippleEpoch(),
-                    ledgerResponse.Result.Ledger.LedgerData.GetHexStringToBytes().Length,
-                    ledgerResponse.Result.Ledger.Transactions.Length,
-                    header.ParentHash
-                )
-            );
-
-            await listener.HandleRawBlockAsync
-            (
-                Base64String.Encode(ledgerResponse.Result.Ledger.LedgerData),
-                ledgerResponse.Result.LedgerHash
-            );
         }
     }
 }

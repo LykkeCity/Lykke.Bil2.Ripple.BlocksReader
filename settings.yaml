@@ -24,13 +24,16 @@ Db:
         settings-key: Ripple-LogsConnString
         types:
             - AzureTableStorage
+    MaxTransactionsSavingParallelism:
+        settings-key: Ripple-MaxTransactionsSavingParallelism
 
 RabbitMq:
     ConnString:
         settings-key: Bcn-BlocksReader-RabbitConnString
         types:
             - RabbitMq
-
+    TransactionsBatchSize:
+        settings-key: Ripple-TransactionsBatchSize
     Vhost:
         settings-key: Bcn-BlocksReader-RabbitVhost
         types:
