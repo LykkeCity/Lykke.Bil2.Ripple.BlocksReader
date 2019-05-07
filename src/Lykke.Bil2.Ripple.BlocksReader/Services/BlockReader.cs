@@ -15,6 +15,13 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
     public class BlockReader : IBlockReader
     {
         private readonly IRippleApi _rippleApi;
+        private readonly string[] _notEnoughBalanceErrors = new string[]
+        {
+            "tecUNFUNDED", // not enough XRP including reserve
+            "tecUNFUNDED_PAYMENT", // not enough XRP not including reserve
+            "tecPATH_DRY", // no token at all
+            "tecPATH_PARTIAL" // not enough token for full amount
+        };
 
         public BlockReader(IRippleApi rippleApi)
         {
@@ -109,7 +116,7 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
                         (
                             txNumber,
                             tx.Hash,
-                            tx.Metadata.TransactionResult == "tecUNFUNDED" || tx.Metadata.TransactionResult == "tecUNFUNDED_PAYMENT"
+                            _notEnoughBalanceErrors.Contains(tx.Metadata.TransactionResult)
                                 ? TransactionBroadcastingError.NotEnoughBalance
                                 : TransactionBroadcastingError.Unknown,
                             tx.Metadata.TransactionResult,
