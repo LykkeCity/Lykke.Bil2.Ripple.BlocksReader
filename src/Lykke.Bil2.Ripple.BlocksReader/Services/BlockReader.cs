@@ -45,6 +45,12 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
 
             ledgerResponse.Result.ThrowIfError();
 
+            if (!ledgerResponse.Result.Ledger.Closed)
+            {
+                listener.HandleNotFoundBlock(new BlockNotFoundEvent(blockNumber));
+                return;
+            }
+
             listener.HandleRawBlock
             (
                 Base64String.Encode(ledgerResponse.Result.Ledger.LedgerData),
@@ -57,7 +63,7 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
             (
                 blockNumber,
                 ledgerResponse.Result.LedgerHash,
-                header.CloseTime.FromRippleEpoch(),
+                header.CloseTime.Value.FromRippleEpoch(),
                 ledgerResponse.Result.Ledger.LedgerData.GetHexStringToBytes().Length,
                 ledgerResponse.Result.Ledger.Transactions.Length,
                 header.ParentHash
