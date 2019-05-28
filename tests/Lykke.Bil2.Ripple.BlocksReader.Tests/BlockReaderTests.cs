@@ -279,5 +279,19 @@ namespace BlockReaderTests
                 Times.Exactly(6)
             );
         }
+
+        [Test]
+        public void Test_block_multiple_balance_changes_for_the_same_address_asset_and_transfer()
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddRippleClient("http://s2.ripple.com:51234", logRequestErrors: false)
+                .BuildServiceProvider();
+
+            var api = serviceProvider.GetRequiredService<IRippleApi>();
+
+            var blockReader = new BlockReader(api);
+
+            Assert.DoesNotThrowAsync(() => blockReader.ReadBlockAsync(556049, _blockListenerMock.Object));
+        }
     }
 }
