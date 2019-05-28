@@ -102,7 +102,7 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
                                 (
                                     tx.Metadata.TransactionIndex.ToString(),
                                     new Asset(pair.amount.Currency, pair.amount.Counterparty),
-                                    Money.Parse(pair.amount.Value),
+                                    pair.amount.Value,
                                     pair.address,
                                     pair.address == tx.Destination ? tx.DestinationTag?.ToString("D") : null,
                                     pair.address == tx.Destination && tx.DestinationTag != null ? AddressTagType.Number : (AddressTagType?)null,
