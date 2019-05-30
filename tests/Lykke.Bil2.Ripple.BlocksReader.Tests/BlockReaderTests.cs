@@ -1,5 +1,5 @@
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using Lykke.Bil2.Contract.BlocksReader.Events;
 using Lykke.Bil2.Ripple.BlocksReader.Services;
 using Lykke.Bil2.Ripple.Client;
@@ -12,7 +12,7 @@ using Moq;
 using NUnit.Framework;
 using Refit;
 
-namespace BlockReaderTests
+namespace Lykke.Bil2.Ripple.BlocksReader.Tests
 {
     public class Tests
     {
@@ -281,7 +281,7 @@ namespace BlockReaderTests
         }
 
         [Test]
-        public void Test_block_multiple_balance_changes_for_the_same_address_asset_and_transfer()
+        public void Test_multiple_balance_changes_for_the_same_address_asset_and_transfer()
         {
             var serviceProvider = new ServiceCollection()
                 .AddRippleClient("http://s2.ripple.com:51234", logRequestErrors: false)
@@ -292,6 +292,30 @@ namespace BlockReaderTests
             var blockReader = new BlockReader(api);
 
             Assert.DoesNotThrowAsync(() => blockReader.ReadBlockAsync(556049, _blockListenerMock.Object));
+        }
+
+        [Test]
+        [TestCase(562177, "C6A40F56127436DCD830B1B35FF939FD05B5747D30D6542572B7A835239817AF", false)]        
+        [TestCase(562177, "C6A40F56127436DCD830B1B35FF939FD05B5747D30D6542572B7A835239817AF_0", true)]        
+        [TestCase(3717633, "C6A40F56127436DCD830B1B35FF939FD05B5747D30D6542572B7A835239817AF", true)]
+        [TestCase(3717633, "C6A40F56127436DCD830B1B35FF939FD05B5747D30D6542572B7A835239817AF_0", false)]
+        public async Task Test_blocks_with_transaction_duplications(long blockNumber, string transactionId, bool shouldBePublished)
+        {
+            var txId = new TransactionId(transactionId);
+            var serviceProvider = new ServiceCollection()
+                .AddRippleClient("http://s2.ripple.com:51234", logRequestErrors: false)
+                .BuildServiceProvider();
+
+            var api = serviceProvider.GetRequiredService<IRippleApi>();
+
+            var blockReader = new BlockReader(api);
+
+            await blockReader.ReadBlockAsync(blockNumber, _blockListenerMock.Object);
+
+            var expectedTimes = shouldBePublished ? Times.Once() : Times.Never();
+
+            _transactionsListenerMock.Verify(x => x.HandleExecutedTransaction(It.Is<TransferAmountExecutedTransaction>(t => t.TransactionId == txId)), expectedTimes);
+            _transactionsListenerMock.Verify(x => x.HandleRawTransactionAsync(It.IsAny<Base64String>(), It.Is<TransactionId>(id => id == txId)), expectedTimes);
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -58,11 +59,17 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
             );
 
             var header = ledgerResponse.Result.Ledger.Parse(headerOnly: true);
+            var blockId = new BlockId(ledgerResponse.Result.LedgerHash);
+
+            if (!header.CloseTime.HasValue)
+            {
+                throw new InvalidOperationException("Block mining time is not specified");
+            }
 
             var transactionsListener = listener.StartBlockTransactionsHandling(new BlockHeaderReadEvent
             (
                 blockNumber,
-                ledgerResponse.Result.LedgerHash,
+                blockId,
                 header.CloseTime.Value.FromRippleEpoch(),
                 ledgerResponse.Result.Ledger.LedgerData.GetHexStringToBytes().Length,
                 ledgerResponse.Result.Ledger.Transactions.Length,
@@ -74,6 +81,7 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
             foreach (var binaryTx in ledgerResponse.Result.Ledger.Transactions)
             {
                 var tx = binaryTx.Parse();
+                var txId = tx.GetId(blockId);
                 var txNumber = (int)(tx.Metadata.TransactionIndex + 1);
                 var txRaw = Base64String.Encode(binaryTx.TxBlob);
                 var txFee = new[]
@@ -85,7 +93,7 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
                     )
                 };
 
-                await transactionsListener.HandleRawTransactionAsync(txRaw, tx.Hash);
+                await transactionsListener.HandleRawTransactionAsync(txRaw, txId);
 
                 if (tx.Metadata.TransactionResult == "tesSUCCESS")
                 {
@@ -94,7 +102,7 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
                         new TransferAmountExecutedTransaction
                         (
                             txNumber,
-                            tx.Hash,
+                            txId,
                             tx.Metadata
                                 .GetBalanceChanges()
                                 .SelectMany(pair => pair.Value.Select(amount => (address: pair.Key, amount: amount)))
@@ -121,7 +129,7 @@ namespace Lykke.Bil2.Ripple.BlocksReader.Services
                         new FailedTransaction
                         (
                             txNumber,
-                            tx.Hash,
+                            txId,
                             _notEnoughBalanceErrors.Contains(tx.Metadata.TransactionResult)
                                 ? TransactionBroadcastingError.NotEnoughBalance
                                 : TransactionBroadcastingError.Unknown,
